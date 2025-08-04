@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   transpilePackages: ['framer-motion'],
-  output: 'export', // Required for static export
+  // output: 'export', // Required for static export
   eslint: {
     ignoreDuringBuilds: true, // Prevent ESLint errors during export
   },
