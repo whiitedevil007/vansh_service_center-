@@ -1,10 +1,14 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
+  transpilePackages: ['framer-motion'],
+  output: 'export', // Required for static export
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: true, // Prevent ESLint errors during export
   },
-  images: { unoptimized: true },
+  images: {
+    unoptimized: true, // Required when using `output: 'export'`
+  },
+  trailingSlash: true, // Optional: ensures static routing consistency
 };
 
 module.exports = nextConfig;

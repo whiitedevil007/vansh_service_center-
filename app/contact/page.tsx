@@ -386,7 +386,7 @@ export default function ContactPage() {
           </motion.div>
 
             <div className="bg-gray-200 rounded-2xl h-96 w-full overflow-hidden">
-            <MapEmbed className="w-full h-full" />
+            <MapEmbed />
             </div>
         </div>
       </section>

@@ -1,60 +1,53 @@
-'use client'
-
-import { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { notFound } from 'next/navigation'
+import { supabase, BlogPost } from '@/lib/supabase'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import Link from 'next/link'
-import { supabase, BlogPost } from '@/lib/supabase'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { ArrowLeft, Calendar, User, Share2, MessageCircle, Phone } from 'lucide-react'
 import { format } from 'date-fns'
+import { MotionDiv } from '@/components/motion-div' // Custom motion component
 
-export default function BlogPostPage() {
-  const params = useParams()
-  const [post, setPost] = useState<BlogPost | null>(null)
-  const [loading, setLoading] = useState(true)
+export async function generateStaticParams() {
+  const { data: posts } = await supabase
+    .from('blog_posts')
+    .select('slug')
+    .eq('published', true)
+  
+  return posts?.map(post => ({
+    slug: post.slug,
+  })) || []
+}
 
-  useEffect(() => {
-    async function fetchPost() {
-      if (!params.slug) return
+export async function generateMetadata({ params }: { params: { slug: string } }) {
+  const { data: post } = await supabase
+    .from('blog_posts')
+    .select('title, summary, image_url')
+    .eq('slug', params.slug)
+    .single()
 
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('slug', params.slug)
-        .eq('published', true)
-        .single()
-
-      if (data) {
-        setPost(data)
-      }
-      setLoading(false)
-    }
-
-    fetchPost()
-  }, [params.slug])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-      </div>
-    )
+  return {
+    title: post?.title || 'Blog Post',
+    description: post?.summary,
+    openGraph: {
+      title: post?.title,
+      description: post?.summary,
+      images: post?.image_url ? [{ url: post.image_url }] : [],
+    },
   }
+}
+
+export default async function BlogPostPage({ params }: { params: { slug: string } }) {
+  const { data: post } = await supabase
+    .from('blog_posts')
+    .select('*')
+    .eq('slug', params.slug)
+    .eq('published', true)
+    .single()
 
   if (!post) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Article Not Found</h1>
-          <Link href="/blog">
-            <Button>Back to Blog</Button>
-          </Link>
-        </div>
-      </div>
-    )
+    notFound()
   }
 
   return (
@@ -62,7 +55,7 @@ export default function BlogPostPage() {
       {/* Hero Section */}
       <section className="relative py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -96,14 +89,14 @@ export default function BlogPostPage() {
                 {post.summary}
               </p>
             </div>
-          </motion.div>
+          </MotionDiv>
         </div>
       </section>
 
       {/* Featured Image */}
       <section className="py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
@@ -114,8 +107,9 @@ export default function BlogPostPage() {
               alt={post.title}
               fill
               className="object-cover"
+              priority
             />
-          </motion.div>
+          </MotionDiv>
         </div>
       </section>
 
@@ -124,7 +118,7 @@ export default function BlogPostPage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             {/* Main Content */}
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
@@ -145,10 +139,10 @@ export default function BlogPostPage() {
                   />
                 </CardContent>
               </Card>
-            </motion.div>
+            </MotionDiv>
 
             {/* Sidebar */}
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
@@ -226,7 +220,7 @@ export default function BlogPostPage() {
                   </CardContent>
                 </Card>
               </div>
-            </motion.div>
+            </MotionDiv>
           </div>
         </div>
       </section>
@@ -234,7 +228,7 @@ export default function BlogPostPage() {
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-blue-600 to-blue-800 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
+          <MotionDiv
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -269,7 +263,7 @@ export default function BlogPostPage() {
                 </a>
               </Button>
             </div>
-          </motion.div>
+          </MotionDiv>
         </div>
       </section>
     </div>
